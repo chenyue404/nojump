@@ -1,4 +1,4 @@
-package com.chenyue404.nojump
+package com.chenyue404.nojump.hook
 
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.callbacks.XC_LoadPackage
@@ -20,6 +20,7 @@ object HookManager {
     init {
         registHookClass(
             arrayListOf(
+                JumpHook()
             )
         )
     }
