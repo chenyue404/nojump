@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">不准跳转</string>
+    <string name="xposed_description">拦截scheme跳转</string>
+</resources>
