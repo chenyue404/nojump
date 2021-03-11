@@ -167,16 +167,12 @@ class JumpHook : IXposedHookLoadPackage {
     }
 
 //23,24,25,26,27
-//    android.app.IApplicationThread
-//    android.app.ProfilerInfo
 //        com.android.server.am.ActivityManagerService
 //        startActivityAsUser(IApplicationThread caller, String callingPackage,
 //            Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode,
 //            int startFlags, ProfilerInfo profilerInfo, Bundle bOptions, int userId)
 
 //28
-//    android.app.IApplicationThread
-//    android.app.ProfilerInfo
 //        com.android.server.am.ActivityManagerService
 //        startActivityAsUser(IApplicationThread caller, String callingPackage,
 //            Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode,
@@ -184,8 +180,6 @@ class JumpHook : IXposedHookLoadPackage {
 //            boolean validateIncomingUser)
 
 //29
-//    android.app.IApplicationThread
-//    android.app.ProfilerInfo
 //    com.android.server.wm.ActivityTaskManagerService
 //    startActivityAsUser(IApplicationThread caller, String callingPackage,
 //        Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode,
@@ -193,8 +187,6 @@ class JumpHook : IXposedHookLoadPackage {
 //        boolean validateIncomingUser)
 
 //30
-//    android.app.IApplicationThread
-//    android.app.ProfilerInfo
 //    com.android.server.wm.ActivityTaskManagerService
 //    startActivityAsUser(IApplicationThread caller, String callingPackage,
 //        @Nullable String callingFeatureId,

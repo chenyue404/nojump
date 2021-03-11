@@ -1,4 +1,16 @@
 <resources>
     <string name="app_name">不准跳转</string>
     <string name="xposed_description">拦截scheme跳转</string>
+    <string name="time">时间</string>
+    <string name="callingPackage">callingPackage</string>
+    <string name="dataString">dataString</string>
+    <string name="dataStringContain">dataString包含</string>
+    <string name="whiteList">白名单</string>
+    <string name="blockList">黑名单</string>
+    <string name="callingPackageContain">callingPackage包含，逗号分隔</string>
+    <string name="log">日志</string>
+    <string name="rule">规则</string>
+    <string name="about">关于</string>
+    <string name="githubAddress">https://github.com/chenyue404/nojump</string>
+    <string name="view">查看</string>
 </resources>

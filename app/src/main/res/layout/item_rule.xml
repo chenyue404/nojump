@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="15dp">
+
+    <EditText
+        android:id="@+id/etDataString"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/dataStringContain"
+        android:maxLines="1" />
+
+    <EditText
+        android:id="@+id/etPackage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/callingPackageContain"
+        android:maxLines="1" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ToggleButton
+            android:id="@+id/tb"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textOff="@string/whiteList"
+            android:textOn="@string/blockList" />
+
+        <ImageButton
+            android:id="@+id/ibDelete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:src="@android:drawable/ic_menu_delete" />
+    </FrameLayout>
+</LinearLayout>
