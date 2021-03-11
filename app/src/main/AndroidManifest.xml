@@ -14,6 +14,11 @@
             </intent-filter>
         </activity>
 
+        <provider
+            android:name=".MyPreferenceProvider"
+            android:authorities="com.chenyue404.noiump.preferences"
+            android:exported="true" />
+
         <meta-data
             android:name="xposedmodule"
             android:value="true" />

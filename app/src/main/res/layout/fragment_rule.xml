@@ -3,7 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvList"
@@ -20,7 +22,9 @@
         android:id="@+id/btSave"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:contentDescription="@string/save"
         android:src="@android:drawable/ic_menu_save"
+        android:tooltipText="@string/save"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/btAdd"
         app:layout_constraintHorizontal_chainStyle="packed"
@@ -30,7 +34,9 @@
         android:id="@+id/btAdd"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:contentDescription="@string/add"
         android:src="@android:drawable/ic_menu_add"
+        android:tooltipText="@string/add"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/btSave" />

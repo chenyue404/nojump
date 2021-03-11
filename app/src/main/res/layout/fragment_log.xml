@@ -35,6 +35,7 @@
         android:layout_height="wrap_content"
         android:contentDescription="@string/clearLog"
         android:src="@android:drawable/ic_menu_delete"
+        android:tooltipText="@string/clearLog"
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

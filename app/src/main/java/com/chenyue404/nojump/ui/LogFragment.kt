@@ -1,13 +1,13 @@
 package com.chenyue404.nojump.ui
 
 import android.content.IntentFilter
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.chenyue404.nojump.LogReceiver
@@ -70,9 +70,9 @@ class LogFragment : Fragment() {
         super.onDestroy()
     }
 
-    class LogListAdapter(val dataList: ArrayList<LogEntity>) :
+    private class LogListAdapter(val dataList: ArrayList<LogEntity>) :
         RecyclerView.Adapter<LogListAdapter.ViewHolder>() {
-        class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val tvTime = itemView.findViewById<TextView>(R.id.tvTime)
             val tvCallingPackage = itemView.findViewById<TextView>(R.id.tvCallingPackage)
             val tvDataString = itemView.findViewById<TextView>(R.id.tvDataString)
@@ -88,7 +88,12 @@ class LogFragment : Fragment() {
                 tvTime.text = logEntity.time.timeToStr()
                 tvCallingPackage.text = logEntity.callPackage
                 tvDataString.text = logEntity.dataString
-                itemView.setBackgroundColor(if (logEntity.blocked) Color.RED else Color.LTGRAY)
+                itemView.setBackgroundColor(
+                    ContextCompat.getColor(
+                        itemView.context,
+                        if (logEntity.blocked) R.color.item_block else R.color.item_normal
+                    )
+                )
             }
         }
 
