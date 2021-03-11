@@ -8,6 +8,9 @@ import android.os.Handler
 import android.os.IBinder
 import android.text.TextUtils
 import android.widget.Toast
+import com.chenyue404.nojump.LogReceiver
+import com.chenyue404.nojump.entity.LogEntity
+import com.google.gson.Gson
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
@@ -50,21 +53,36 @@ class JumpHook : IXposedHookLoadPackage {
                     param.thisObject.javaClass,
                     "mUiHandler"
                 )
-                if (field != null && !TextUtils.isEmpty(scheme)
-                    && scheme == "openapp.jdmobile"
-                ) {
+                if (field != null && !TextUtils.isEmpty(dataString)) {
                     try {
                         val context = field[param.thisObject] as Context
                         val mUiHandler = handlerField[param.thisObject] as Handler
-                        mUiHandler.post {
-                            XposedBridge.log(TAG + "执行Toast")
-                            Toast.makeText(
-                                context,
-                                "$TAG 执行Toast",
-                                Toast.LENGTH_SHORT
-                            ).show()
+
+                        context.sendBroadcast(Intent().apply {
+                            action = LogReceiver.ACTION
+                            putExtra(
+                                LogReceiver.EXTRA_KEY, Gson().toJson(
+                                    LogEntity(
+                                        System.currentTimeMillis(),
+                                        callingPackage,
+                                        dataString,
+                                        false
+                                    )
+                                )
+                            )
+                        })
+
+                        if (scheme == "openapp.jdmobile") {
+                            mUiHandler.post {
+                                XposedBridge.log(TAG + "执行Toast")
+                                Toast.makeText(
+                                    context,
+                                    "$TAG 执行Toast",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            param.result = 0
                         }
-                        param.result = 0
                     } catch (e: IllegalAccessException) {
                         XposedBridge.log(TAG + e.toString())
                         e.printStackTrace()

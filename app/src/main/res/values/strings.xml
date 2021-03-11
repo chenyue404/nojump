@@ -13,4 +13,6 @@
     <string name="about">关于</string>
     <string name="githubAddress">https://github.com/chenyue404/nojump</string>
     <string name="view">查看</string>
+    <string name="tip_log">所有dataString不为空的应用间的跳转记录都会在这里，App打开才能记录。</string>
+    <string name="clearLog">清除记录</string>
 </resources>

@@ -41,4 +41,5 @@ dependencies {
 
     implementation 'com.shizhefei:ViewPagerIndicator:1.1.9.androidx'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation("com.google.code.gson:gson:2.8.6")
 }
