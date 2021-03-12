@@ -9,7 +9,11 @@ import android.os.IBinder
 import android.text.TextUtils
 import android.widget.Toast
 import com.chenyue404.nojump.LogReceiver
+import com.chenyue404.nojump.MyPreferenceProvider
 import com.chenyue404.nojump.entity.LogEntity
+import com.chenyue404.nojump.entity.RuleEntity
+import com.chenyue404.nojump.fromJson
+import com.crossbowffs.remotepreferences.RemotePreferences
 import com.google.gson.Gson
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.XC_MethodHook
@@ -30,75 +34,12 @@ class JumpHook : IXposedHookLoadPackage {
             return
         }
 
+        hookCheckBroadcastFromSystem(classLoader)
+
         val IApplicationThread =
             XposedHelpers.findClass("android.app.IApplicationThread", classLoader)
         val ProfilerInfo =
             XposedHelpers.findClass("android.app.ProfilerInfo", classLoader)
-
-        val parameterTypesAndCallback = object : XC_MethodHook() {
-            override fun beforeHookedMethod(param: MethodHookParam) {
-                val intent = param.args[2] as Intent
-                val targetActivity =
-                    if (intent.component == null) "" else intent.component!!
-                        .className
-                val targetApp = intent.getPackage()
-                val callingPackage = param.args[1] as String
-                val dataString = intent.dataString
-                val scheme = intent.scheme
-                val field = XposedHelpers.findFieldIfExists(
-                    param.thisObject.javaClass,
-                    "mUiContext"
-                )
-                val handlerField = XposedHelpers.findFieldIfExists(
-                    param.thisObject.javaClass,
-                    "mUiHandler"
-                )
-                if (field != null && !TextUtils.isEmpty(dataString)) {
-                    try {
-                        val context = field[param.thisObject] as Context
-                        val mUiHandler = handlerField[param.thisObject] as Handler
-
-                        context.sendBroadcast(Intent().apply {
-                            action = LogReceiver.ACTION
-                            putExtra(
-                                LogReceiver.EXTRA_KEY, Gson().toJson(
-                                    LogEntity(
-                                        System.currentTimeMillis(),
-                                        callingPackage,
-                                        dataString,
-                                        false
-                                    )
-                                )
-                            )
-                        })
-
-                        if (scheme == "openapp.jdmobile") {
-                            mUiHandler.post {
-                                XposedBridge.log(TAG + "执行Toast")
-                                Toast.makeText(
-                                    context,
-                                    "$TAG 执行Toast",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                            param.result = 0
-                        }
-                    } catch (e: IllegalAccessException) {
-                        XposedBridge.log(TAG + e.toString())
-                        e.printStackTrace()
-                    }
-                } else {
-                    XposedBridge.log(TAG + "field为空")
-                }
-                XposedBridge.log(
-                    TAG + "--callingPackage=" + callingPackage
-                            + "--targetActivity=" + targetActivity
-                            + "--targetApp=" + targetApp
-                            + "--dataString=" + dataString
-                            + "--scheme=" + scheme
-                )
-            }
-        }
 
         when (Build.VERSION.SDK_INT) {
             in Build.VERSION_CODES.M..Build.VERSION_CODES.O_MR1 -> {
@@ -117,7 +58,7 @@ class JumpHook : IXposedHookLoadPackage {
                     ProfilerInfo,
                     Bundle::class.java,
                     Int::class.java,
-                    parameterTypesAndCallback
+                    createCallback(classLoader)
                 )
             }
             Build.VERSION_CODES.P -> {
@@ -137,7 +78,7 @@ class JumpHook : IXposedHookLoadPackage {
                     Bundle::class.java,
                     Int::class.java,
                     Boolean::class.java,
-                    parameterTypesAndCallback
+                    createCallback(classLoader)
                 )
             }
             Build.VERSION_CODES.Q -> {
@@ -157,7 +98,7 @@ class JumpHook : IXposedHookLoadPackage {
                     Bundle::class.java,
                     Int::class.java,
                     Boolean::class.java,
-                    parameterTypesAndCallback
+                    createCallback(classLoader)
                 )
             }
             Build.VERSION_CODES.R -> {
@@ -178,7 +119,7 @@ class JumpHook : IXposedHookLoadPackage {
                     Bundle::class.java,
                     Int::class.java,
                     Boolean::class.java,
-                    parameterTypesAndCallback
+                    createCallback(classLoader)
                 )
             }
         }
@@ -211,4 +152,122 @@ class JumpHook : IXposedHookLoadPackage {
 //        Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode,
 //        int startFlags, ProfilerInfo profilerInfo, Bundle bOptions, int userId,
 //        boolean validateIncomingUser)
+
+    /**
+     * 解除系统不能发自定义广播的限制
+     */
+    private fun hookCheckBroadcastFromSystem(classLoader: ClassLoader) {
+        val ProcessRecord =
+            XposedHelpers.findClass("com.android.server.am.ProcessRecord", classLoader)
+        XposedHelpers.findAndHookMethod(
+            "com.android.server.am.ActivityManagerService", classLoader,
+            "checkBroadcastFromSystem",
+            Intent::class.java,
+            ProcessRecord,
+            String::class.java,
+            Int::class.java,
+            Boolean::class.java,
+            List::class.java,
+            object : XC_MethodHook() {
+                override fun beforeHookedMethod(param: MethodHookParam) {
+                    val intent: Intent = param.args[0] as Intent
+                    if (intent.action == LogReceiver.ACTION) {
+                        param.args[4] = true
+                    }
+                }
+            }
+        )
+    }
+
+    private fun createCallback(classLoader: ClassLoader): XC_MethodHook {
+        return object : XC_MethodHook() {
+            override fun beforeHookedMethod(param: MethodHookParam) {
+                val intent = param.args[2] as Intent
+                val callingPackage = param.args[1] as String
+                val dataString = intent.dataString
+                val targetPackage = intent.`package`
+                val field = XposedHelpers.findFieldIfExists(
+                    param.thisObject.javaClass,
+                    "mUiContext"
+                )
+                val handlerField = XposedHelpers.findFieldIfExists(
+                    param.thisObject.javaClass,
+                    "mUiHandler"
+                )
+
+//                val activityRecordField = XposedHelpers.findFieldIfExists(
+//                    param.thisObject.javaClass,
+//                    "mLastResumedActivity"
+//                )
+//                activityRecordField?.let {
+//                    val activityRecordPackageName = XposedHelpers.findFieldIfExists(
+//                        it[param.thisObject].javaClass,
+//                        "packageName"
+//                    )[it[param.thisObject]]
+//                    XposedBridge.log("$TAG activityRecordPackageName=$activityRecordPackageName")
+//                } ?: kotlin.run {
+//                    XposedBridge.log("$TAG activityRecordField为空")
+//                }
+
+                if (!TextUtils.isEmpty(dataString)
+                    && !TextUtils.isEmpty(targetPackage)
+                    && callingPackage != targetPackage
+                ) {
+                    val context = field[param.thisObject] as Context
+                    val mUiHandler = handlerField[param.thisObject] as Handler
+                    val ruleStr = RemotePreferences(
+                        context,
+                        "com.chenyue404.noiump.preferences",
+                        MyPreferenceProvider.PREF_NAME
+                    ).getString(MyPreferenceProvider.KEY_NAME, "") ?: ""
+
+                    val ruleList = fromJson<ArrayList<RuleEntity>>(ruleStr)
+
+                    val shouldBlock = ruleList.any { ruleEntity ->
+                        dataString!!.contains(ruleEntity.dataString) &&
+                                ruleEntity.callPackage.split(",")
+                                    .any {
+                                        if (ruleEntity.isBlock) {
+                                            callingPackage.contains(it)
+                                        } else {
+                                            !callingPackage.contains(it)
+                                        }
+                                    }
+                    }
+                    context.sendBroadcast(Intent().apply {
+                        action = LogReceiver.ACTION
+                        putExtra(
+                            LogReceiver.EXTRA_KEY, Gson().toJson(
+                                LogEntity(
+                                    System.currentTimeMillis(),
+                                    callingPackage,
+                                    dataString,
+                                    shouldBlock
+                                )
+                            )
+                        )
+                    })
+                    if (shouldBlock) {
+                        mUiHandler.post {
+                            Toast.makeText(
+                                context,
+                                "Blocked",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                        param.result = 0
+                    }
+                } else {
+                    XposedBridge.log(
+                        "${TAG}field=$field\n" +
+                                "dataString=$dataString\n" +
+                                "targetPackage=$targetPackage\n" +
+                                "callPackage=$callingPackage\n" +
+                                "component=${intent.component}\n" +
+                                "intent=$intent"
+                    )
+                }
+            }
+        }
+    }
 }

@@ -1,6 +1,8 @@
 package com.chenyue404.nojump
 
 import android.content.Context
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -13,4 +15,8 @@ fun Long.timeToStr(): String =
 
 fun Int.dp2Px(context: Context): Int {
     return (this * context.resources.displayMetrics.density + 0.5f).toInt()
+}
+
+inline fun <reified T> fromJson(json: String?): T {
+    return Gson().fromJson<T>(json, object : TypeToken<T>() {}.type)
 }

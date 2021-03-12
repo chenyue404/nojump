@@ -17,8 +17,8 @@ import com.chenyue404.nojump.MyPreferenceProvider
 import com.chenyue404.nojump.R
 import com.chenyue404.nojump.dp2Px
 import com.chenyue404.nojump.entity.RuleEntity
+import com.chenyue404.nojump.fromJson
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 
 class RuleFragment : Fragment() {
     private val TAG = "nojump-hook-"
@@ -74,6 +74,8 @@ class RuleFragment : Fragment() {
             ).edit(true) {
                 putString(MyPreferenceProvider.KEY_NAME, str)
             }
+            Toast.makeText(requireContext(), getString(R.string.saved), Toast.LENGTH_SHORT)
+                .show()
         }
         btAdd.setOnClickListener {
             dataList.add(RuleEntity())
@@ -138,9 +140,5 @@ class RuleFragment : Fragment() {
         }
 
         override fun getItemCount() = dataList.size
-    }
-
-    inline fun <reified T> fromJson(json: String?): T {
-        return Gson().fromJson<T>(json, object : TypeToken<T>() {}.type)
     }
 }
