@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">不准跳转</string>
-    <string name="xposed_description">拦截scheme跳转</string>
+    <string name="xposed_description">拦截dataString不为空的应用程序之间的跳转。</string>
     <string name="time">时间</string>
     <string name="dataStringContain">dataString包含</string>
     <string name="whiteList">包名白名单</string>
