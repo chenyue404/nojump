@@ -7,7 +7,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class Utils {
-
 }
 
 fun Long.timeToStr(): String =
@@ -19,4 +18,8 @@ fun Int.dp2Px(context: Context): Int {
 
 inline fun <reified T> fromJson(json: String?): T {
     return Gson().fromJson<T>(json, object : TypeToken<T>() {}.type)
+}
+
+fun getResourceIdByName(context: Context, name: String): Int {
+    return context.resources.getIdentifier(name, "string", context.packageName)
 }

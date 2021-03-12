@@ -1,22 +1,22 @@
 <resources>
-    <string name="app_name">不准跳转</string>
-    <string name="xposed_description">拦截scheme跳转</string>
-    <string name="time">时间</string>
-    <string name="callingPackage">callingPackage</string>
-    <string name="dataString">dataString</string>
-    <string name="dataStringContain">dataString包含</string>
-    <string name="whiteList">包名白名单</string>
-    <string name="blockList">包名黑名单</string>
-    <string name="callingPackageContain">callingPackage包含，逗号分隔</string>
-    <string name="log">日志</string>
-    <string name="rule">规则</string>
-    <string name="about">关于</string>
-    <string name="githubAddress">https://github.com/chenyue404/nojump</string>
-    <string name="view">查看</string>
-    <string name="tip_log">所有dataString不为空的应用间的跳转记录都会在这里，App打开才能记录。</string>
-    <string name="clearLog">清除记录</string>
-    <string name="noEmpty">不要留空</string>
-    <string name="save">保存</string>
-    <string name="saved">已保存</string>
-    <string name="add">添加</string>
+    <string name="app_name">No Jump</string>
+    <string name="xposed_description">Intercept jumps between applications where dataString is not empty</string>
+    <string name="time">Time</string>
+    <string name="callingPackage" translatable="false">callingPackage</string>
+    <string name="dataString" translatable="false">dataString</string>
+    <string name="dataStringContain">dataString contains</string>
+    <string name="whiteList">Package name white list</string>
+    <string name="blockList">Package name block list</string>
+    <string name="callingPackageContain">callingPackage contains, separated by comma.</string>
+    <string name="log">Log</string>
+    <string name="rule">Rule</string>
+    <string name="about">About</string>
+    <string name="view">Check</string>
+    <string name="tip_log">All jumps between applications where dataString is not empty will be recorded here, log only work when I am running.</string>
+    <string name="clearLog">Clear log</string>
+    <string name="noEmpty">No empty</string>
+    <string name="save">Save</string>
+    <string name="saved">Saved</string>
+    <string name="add">Add</string>
+    <string name="blocked">No Jump: blocked</string>
 </resources>

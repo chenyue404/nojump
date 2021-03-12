@@ -24,7 +24,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         fivTop = findViewById(R.id.fivTop)
         vpContent = findViewById(R.id.vpContent)
 

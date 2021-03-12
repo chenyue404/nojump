@@ -3,10 +3,13 @@
     package="com.chenyue404.nojump">
 
     <application
+        android:name=".App"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
-        <activity android:name=".ui.MainActivity">
+        <activity
+            android:name=".ui.MainActivity"
+            android:launchMode="singleInstance">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -16,7 +19,7 @@
 
         <provider
             android:name=".MyPreferenceProvider"
-            android:authorities="com.chenyue404.noiump.preferences"
+            android:authorities="@string/provider_authority"
             android:exported="true" />
 
         <meta-data

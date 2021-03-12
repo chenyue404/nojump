@@ -1,5 +1,6 @@
 package com.chenyue404.nojump.hook
 
+import android.app.AndroidAppHelper
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -8,11 +9,9 @@ import android.os.Handler
 import android.os.IBinder
 import android.text.TextUtils
 import android.widget.Toast
-import com.chenyue404.nojump.LogReceiver
-import com.chenyue404.nojump.MyPreferenceProvider
+import com.chenyue404.nojump.*
 import com.chenyue404.nojump.entity.LogEntity
 import com.chenyue404.nojump.entity.RuleEntity
-import com.chenyue404.nojump.fromJson
 import com.crossbowffs.remotepreferences.RemotePreferences
 import com.google.gson.Gson
 import de.robv.android.xposed.IXposedHookLoadPackage
@@ -58,7 +57,7 @@ class JumpHook : IXposedHookLoadPackage {
                     ProfilerInfo,
                     Bundle::class.java,
                     Int::class.java,
-                    createCallback(classLoader)
+                    createCallback()
                 )
             }
             Build.VERSION_CODES.P -> {
@@ -78,7 +77,7 @@ class JumpHook : IXposedHookLoadPackage {
                     Bundle::class.java,
                     Int::class.java,
                     Boolean::class.java,
-                    createCallback(classLoader)
+                    createCallback()
                 )
             }
             Build.VERSION_CODES.Q -> {
@@ -98,7 +97,7 @@ class JumpHook : IXposedHookLoadPackage {
                     Bundle::class.java,
                     Int::class.java,
                     Boolean::class.java,
-                    createCallback(classLoader)
+                    createCallback()
                 )
             }
             Build.VERSION_CODES.R -> {
@@ -119,7 +118,7 @@ class JumpHook : IXposedHookLoadPackage {
                     Bundle::class.java,
                     Int::class.java,
                     Boolean::class.java,
-                    createCallback(classLoader)
+                    createCallback()
                 )
             }
         }
@@ -179,7 +178,7 @@ class JumpHook : IXposedHookLoadPackage {
         )
     }
 
-    private fun createCallback(classLoader: ClassLoader): XC_MethodHook {
+    private fun createCallback(): XC_MethodHook {
         return object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
                 val intent = param.args[2] as Intent
@@ -193,6 +192,10 @@ class JumpHook : IXposedHookLoadPackage {
                 val handlerField = XposedHelpers.findFieldIfExists(
                     param.thisObject.javaClass,
                     "mUiHandler"
+                )
+                val myContext = AndroidAppHelper.currentApplication().createPackageContext(
+                    BuildConfig.APPLICATION_ID,
+                    Context.CONTEXT_IGNORE_SECURITY
                 )
 
 //                val activityRecordField = XposedHelpers.findFieldIfExists(
@@ -210,30 +213,37 @@ class JumpHook : IXposedHookLoadPackage {
 //                }
 
                 if (!TextUtils.isEmpty(dataString)
-                    && !TextUtils.isEmpty(targetPackage)
+//                    && !TextUtils.isEmpty(targetPackage)
                     && callingPackage != targetPackage
                 ) {
+                    val providerAuthority = myContext.getString(
+                        getResourceIdByName(
+                            myContext,
+                            "provider_authority"
+                        )
+                    )
                     val context = field[param.thisObject] as Context
                     val mUiHandler = handlerField[param.thisObject] as Handler
                     val ruleStr = RemotePreferences(
                         context,
-                        "com.chenyue404.noiump.preferences",
+                        providerAuthority,
                         MyPreferenceProvider.PREF_NAME
                     ).getString(MyPreferenceProvider.KEY_NAME, "") ?: ""
 
                     val ruleList = fromJson<ArrayList<RuleEntity>>(ruleStr)
 
-                    val shouldBlock = ruleList.any { ruleEntity ->
-                        dataString!!.contains(ruleEntity.dataString) &&
-                                ruleEntity.callPackage.split(",")
-                                    .any {
-                                        if (ruleEntity.isBlock) {
-                                            callingPackage.contains(it)
-                                        } else {
-                                            !callingPackage.contains(it)
-                                        }
-                                    }
-                    }
+                    val shouldBlock = !ruleList.isNullOrEmpty() &&
+                            ruleList.any { ruleEntity ->
+                                dataString!!.contains(ruleEntity.dataString) &&
+                                        ruleEntity.callPackage.split(",")
+                                            .any {
+                                                if (ruleEntity.isBlock) {
+                                                    callingPackage.contains(it)
+                                                } else {
+                                                    !callingPackage.contains(it)
+                                                }
+                                            }
+                            }
                     context.sendBroadcast(Intent().apply {
                         action = LogReceiver.ACTION
                         putExtra(
@@ -248,12 +258,14 @@ class JumpHook : IXposedHookLoadPackage {
                         )
                     })
                     if (shouldBlock) {
+                        val blockTip = myContext.getString(
+                            getResourceIdByName(
+                                myContext,
+                                "blocked"
+                            )
+                        )
                         mUiHandler.post {
-                            Toast.makeText(
-                                context,
-                                "Blocked",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            Toast.makeText(context, blockTip, Toast.LENGTH_SHORT).show()
                         }
                         param.result = 0
                     }

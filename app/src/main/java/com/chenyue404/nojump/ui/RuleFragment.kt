@@ -95,7 +95,9 @@ class RuleFragment : Fragment() {
 
         dataList.apply {
             clear()
-            addAll(list)
+            if (!list.isNullOrEmpty()) {
+                addAll(list)
+            }
         }
         listAdapter.notifyDataSetChanged()
     }
