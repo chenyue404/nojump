@@ -19,4 +19,5 @@
     <string name="saved">Saved</string>
     <string name="add">Add</string>
     <string name="blocked">No Jump: blocked</string>
+    <string name="batteryTip">Please set to ignore battery optimization</string>
 </resources>

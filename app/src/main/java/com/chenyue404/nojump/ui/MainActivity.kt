@@ -1,9 +1,13 @@
 package com.chenyue404.nojump.ui
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import android.view.*
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -59,6 +63,21 @@ class MainActivity : AppCompatActivity() {
                 override fun getFragmentForPage(position: Int) =
                     if (position == 0) logFragment else ruleFragment
             }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+            !(getSystemService(Context.POWER_SERVICE) as PowerManager).isIgnoringBatteryOptimizations(
+                packageName
+            )
+        ) {
+            AlertDialog.Builder(this)
+                .setMessage(R.string.batteryTip)
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    startActivity(Intent().apply {
+                        action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
+                    })
+                }
+                .create().show()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

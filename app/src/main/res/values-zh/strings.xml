@@ -18,4 +18,5 @@
     <string name="saved">已保存</string>
     <string name="add">添加</string>
     <string name="blocked">不准跳转：已拦截</string>
+    <string name="batteryTip">请设置忽略电池优化</string>
 </resources>

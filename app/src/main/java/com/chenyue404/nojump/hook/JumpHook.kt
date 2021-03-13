@@ -23,7 +23,11 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 class JumpHook : IXposedHookLoadPackage {
 
     private val PACKAGE_NAME = "android"
-    private val TAG = "nojump-hook-"
+    private val TAG = "nojump--hook-"
+
+    companion object {
+        var ruleStr = ""
+    }
 
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
         val packageName = lpparam.packageName
@@ -198,40 +202,72 @@ class JumpHook : IXposedHookLoadPackage {
                     Context.CONTEXT_IGNORE_SECURITY
                 )
 
-//                val activityRecordField = XposedHelpers.findFieldIfExists(
+//                var activityRecordContext: Context? = null
+//                XposedHelpers.findFieldIfExists(
 //                    param.thisObject.javaClass,
 //                    "mLastResumedActivity"
-//                )
-//                activityRecordField?.let {
+//                )?.let {
 //                    val activityRecordPackageName = XposedHelpers.findFieldIfExists(
 //                        it[param.thisObject].javaClass,
 //                        "packageName"
-//                    )[it[param.thisObject]]
+//                    )[it[param.thisObject]]?.toString()
 //                    XposedBridge.log("$TAG activityRecordPackageName=$activityRecordPackageName")
+//                    activityRecordContext =
+//                        AndroidAppHelper.currentApplication().createPackageContext(
+//                            activityRecordPackageName,
+//                            Context.CONTEXT_IGNORE_SECURITY
+//                        )
 //                } ?: kotlin.run {
 //                    XposedBridge.log("$TAG activityRecordField为空")
 //                }
 
+                XposedBridge.log(
+                    "${TAG}field=$field\n" +
+                            "dataString=$dataString\n" +
+                            "targetPackage=$targetPackage\n" +
+                            "callPackage=$callingPackage\n" +
+                            "component=${intent.component}\n" +
+                            "intent=$intent"
+                )
+                val providerAuthority = myContext.getString(
+                    getResourceIdByName(
+                        myContext,
+                        "provider_authority"
+                    )
+                )
+//                activityRecordContext?.let {
+//                    val beforeRuleStr = RemotePreferences(
+//                        activityRecordContext,
+//                        providerAuthority,
+//                        MyPreferenceProvider.PREF_NAME
+//                    ).getString(MyPreferenceProvider.KEY_NAME, "")
+//                    XposedBridge.log(
+//                        "$TAG context=${it.packageName}\n" +
+//                                "ruleStr=$beforeRuleStr"
+//                    )
+//                }
+
                 if (!TextUtils.isEmpty(dataString)
-//                    && !TextUtils.isEmpty(targetPackage)
                     && callingPackage != targetPackage
                 ) {
-                    val providerAuthority = myContext.getString(
-                        getResourceIdByName(
-                            myContext,
-                            "provider_authority"
-                        )
-                    )
                     val context = field[param.thisObject] as Context
                     val mUiHandler = handlerField[param.thisObject] as Handler
-                    val ruleStr = RemotePreferences(
-                        context,
-                        providerAuthority,
-                        MyPreferenceProvider.PREF_NAME
-                    ).getString(MyPreferenceProvider.KEY_NAME, "") ?: ""
+
+                    XposedBridge.log(
+                        "$TAG ruleStr读取之前=$ruleStr"
+                    )
+                    mUiHandler.post {
+                        ruleStr = RemotePreferences(
+                            context,
+                            providerAuthority,
+                            MyPreferenceProvider.PREF_NAME
+                        ).getString(MyPreferenceProvider.KEY_NAME, "").toString()
+                        XposedBridge.log(
+                            "$TAG ruleStr读取=$ruleStr"
+                        )
+                    }
 
                     val ruleList = fromJson<ArrayList<RuleEntity>>(ruleStr)
-
                     val shouldBlock = !ruleList.isNullOrEmpty() &&
                             ruleList.any { ruleEntity ->
                                 dataString!!.contains(ruleEntity.dataString) &&
@@ -269,15 +305,6 @@ class JumpHook : IXposedHookLoadPackage {
                         }
                         param.result = 0
                     }
-                } else {
-                    XposedBridge.log(
-                        "${TAG}field=$field\n" +
-                                "dataString=$dataString\n" +
-                                "targetPackage=$targetPackage\n" +
-                                "callPackage=$callingPackage\n" +
-                                "component=${intent.component}\n" +
-                                "intent=$intent"
-                    )
                 }
             }
         }
