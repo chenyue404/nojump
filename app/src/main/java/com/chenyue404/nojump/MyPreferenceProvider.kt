@@ -10,5 +10,6 @@ class MyPreferenceProvider :
     companion object {
         val PREF_NAME = "main_prefs"
         val KEY_NAME = "main_prefs_key"
+        val EMPTY_STR = "EMPTY_STR"
     }
 }

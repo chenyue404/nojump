@@ -1,6 +1,7 @@
 package com.chenyue404.nojump.ui
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -67,12 +68,14 @@ class RuleFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            val str = Gson().toJson(dataList)
-            requireContext().getSharedPreferences(
-                MyPreferenceProvider.PREF_NAME,
-                Context.MODE_PRIVATE
-            ).edit(true) {
-                putString(MyPreferenceProvider.KEY_NAME, str)
+            if (dataList.isNullOrEmpty()) {
+                writeEmptyStr()
+            } else {
+                val str = Gson().toJson(dataList)
+                getSP().edit(true) {
+                    putString(MyPreferenceProvider.KEY_NAME, str)
+                }
+                startActivity(Intent(requireContext(), EmptyActivity::class.java))
             }
             Toast.makeText(requireContext(), getString(R.string.saved), Toast.LENGTH_SHORT)
                 .show()
@@ -83,13 +86,13 @@ class RuleFragment : Fragment() {
             rvList.scrollToPosition(dataList.size - 1)
         }
         readPerf()
+        writeEmptyStr()
     }
 
     private fun readPerf() {
-        val str = requireContext().getSharedPreferences(
-            MyPreferenceProvider.PREF_NAME,
-            Context.MODE_PRIVATE
-        ).getString(MyPreferenceProvider.KEY_NAME, "") ?: return
+        val str = getSP().getString(MyPreferenceProvider.KEY_NAME, MyPreferenceProvider.EMPTY_STR)
+            ?: return
+        if (str == MyPreferenceProvider.EMPTY_STR) return
 
         val list = fromJson<ArrayList<RuleEntity>>(str)
 
@@ -142,5 +145,20 @@ class RuleFragment : Fragment() {
         }
 
         override fun getItemCount() = dataList.size
+    }
+
+    private fun getSP() = requireContext().getSharedPreferences(
+        MyPreferenceProvider.PREF_NAME,
+        Context.MODE_PRIVATE
+    )
+
+    private fun writeEmptyStr() {
+        with(getSP()) {
+            if (getString(MyPreferenceProvider.KEY_NAME, "").toString().isEmpty()) {
+                edit(true) {
+                    putString(MyPreferenceProvider.KEY_NAME, MyPreferenceProvider.EMPTY_STR)
+                }
+            }
+        }
     }
 }

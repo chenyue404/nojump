@@ -6,6 +6,7 @@ import android.content.Context
 class App : Application() {
     companion object {
         lateinit var gContext: App
+        val TAG = "nojump--app-"
     }
 
     override fun attachBaseContext(base: Context) {

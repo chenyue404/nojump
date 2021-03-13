@@ -38,6 +38,7 @@ class JumpHook : IXposedHookLoadPackage {
         }
 
         hookCheckBroadcastFromSystem(classLoader)
+//        hookStartActivity(classLoader)
 
         val IApplicationThread =
             XposedHelpers.findClass("android.app.IApplicationThread", classLoader)
@@ -246,9 +247,9 @@ class JumpHook : IXposedHookLoadPackage {
 //                                "ruleStr=$beforeRuleStr"
 //                    )
 //                }
-
-                if (!TextUtils.isEmpty(dataString)
-                    && callingPackage != targetPackage
+                if (ruleStr.isEmpty()
+                    || (!TextUtils.isEmpty(targetPackage) && targetPackage == BuildConfig.APPLICATION_ID)
+                    || (!TextUtils.isEmpty(callingPackage) && callingPackage == BuildConfig.APPLICATION_ID)
                 ) {
                     val context = field[param.thisObject] as Context
                     val mUiHandler = handlerField[param.thisObject] as Handler
@@ -266,7 +267,15 @@ class JumpHook : IXposedHookLoadPackage {
                             "$TAG ruleStr读取=$ruleStr"
                         )
                     }
+                }
 
+                if (!TextUtils.isEmpty(dataString)
+                    && callingPackage != targetPackage
+                    && ruleStr.isNotEmpty()
+                    && ruleStr != MyPreferenceProvider.EMPTY_STR
+                ) {
+                    val context = field[param.thisObject] as Context
+                    val mUiHandler = handlerField[param.thisObject] as Handler
                     val ruleList = fromJson<ArrayList<RuleEntity>>(ruleStr)
                     val shouldBlock = !ruleList.isNullOrEmpty() &&
                             ruleList.any { ruleEntity ->
@@ -308,5 +317,15 @@ class JumpHook : IXposedHookLoadPackage {
                 }
             }
         }
+    }
+
+    private fun hookStartActivity(classLoader: ClassLoader) {
+        XposedHelpers.findAndHookMethod("android.app.Activity", classLoader,
+            "startActivityForResult",
+            Intent::class.java, Int::class.java, Bundle::class.java,
+            object : XC_MethodHook() {
+                override fun afterHookedMethod(param: MethodHookParam) {
+                }
+            })
     }
 }
