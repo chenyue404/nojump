@@ -272,23 +272,37 @@ class JumpHook : IXposedHookLoadPackage {
                 if (!TextUtils.isEmpty(dataString)
                     && callingPackage != targetPackage
                     && ruleStr.isNotEmpty()
-                    && ruleStr != MyPreferenceProvider.EMPTY_STR
                 ) {
                     val context = field[param.thisObject] as Context
                     val mUiHandler = handlerField[param.thisObject] as Handler
-                    val ruleList = fromJson<ArrayList<RuleEntity>>(ruleStr)
-                    val shouldBlock = !ruleList.isNullOrEmpty() &&
-                            ruleList.any { ruleEntity ->
-                                dataString!!.contains(ruleEntity.dataString) &&
-                                        ruleEntity.callPackage.split(",")
-                                            .any {
-                                                if (ruleEntity.isBlock) {
-                                                    callingPackage.contains(it)
-                                                } else {
-                                                    !callingPackage.contains(it)
+                    var shouldBlock = false
+                    if (ruleStr != MyPreferenceProvider.EMPTY_STR) {
+                        val ruleList = fromJson<ArrayList<RuleEntity>>(ruleStr)
+                        shouldBlock = !ruleList.isNullOrEmpty() &&
+                                ruleList.any { ruleEntity ->
+                                    dataString!!.contains(ruleEntity.dataString) &&
+                                            ruleEntity.callPackage.split(",")
+                                                .any {
+                                                    if (ruleEntity.isBlock) {
+                                                        callingPackage.contains(it)
+                                                    } else {
+                                                        !callingPackage.contains(it)
+                                                    }
                                                 }
-                                            }
+                                }
+                        if (shouldBlock) {
+                            val blockTip = myContext.getString(
+                                getResourceIdByName(
+                                    myContext,
+                                    "blocked"
+                                )
+                            )
+                            mUiHandler.post {
+                                Toast.makeText(context, blockTip, Toast.LENGTH_SHORT).show()
                             }
+                            param.result = 0
+                        }
+                    }
                     context.sendBroadcast(Intent().apply {
                         action = LogReceiver.ACTION
                         putExtra(
@@ -302,18 +316,6 @@ class JumpHook : IXposedHookLoadPackage {
                             )
                         )
                     })
-                    if (shouldBlock) {
-                        val blockTip = myContext.getString(
-                            getResourceIdByName(
-                                myContext,
-                                "blocked"
-                            )
-                        )
-                        mUiHandler.post {
-                            Toast.makeText(context, blockTip, Toast.LENGTH_SHORT).show()
-                        }
-                        param.result = 0
-                    }
                 }
             }
         }

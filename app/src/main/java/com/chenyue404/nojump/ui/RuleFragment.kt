@@ -69,14 +69,16 @@ class RuleFragment : Fragment() {
             }
 
             if (dataList.isNullOrEmpty()) {
-                writeEmptyStr()
+                getSP().edit(true) {
+                    putString(MyPreferenceProvider.KEY_NAME, MyPreferenceProvider.EMPTY_STR)
+                }
             } else {
                 val str = Gson().toJson(dataList)
                 getSP().edit(true) {
                     putString(MyPreferenceProvider.KEY_NAME, str)
                 }
-                startActivity(Intent(requireContext(), EmptyActivity::class.java))
             }
+            startActivity(Intent(requireContext(), EmptyActivity::class.java))
             Toast.makeText(requireContext(), getString(R.string.saved), Toast.LENGTH_SHORT)
                 .show()
         }
