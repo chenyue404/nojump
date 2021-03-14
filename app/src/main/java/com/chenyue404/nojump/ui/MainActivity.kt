@@ -8,19 +8,19 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
-import android.view.*
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.chenyue404.nojump.R
-import com.shizhefei.view.indicator.FixedIndicatorView
-import com.shizhefei.view.indicator.IndicatorViewPager
-import com.shizhefei.view.indicator.transition.OnTransitionTextListener
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var fivTop: FixedIndicatorView
     private lateinit var vpContent: ViewPager
+    private lateinit var tvLog: TextView
+    private lateinit var tvRule: TextView
 
     private val logFragment by lazy { LogFragment() }
     private val ruleFragment by lazy { RuleFragment() }
@@ -28,41 +28,36 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        fivTop = findViewById(R.id.fivTop)
         vpContent = findViewById(R.id.vpContent)
+        tvLog = findViewById(R.id.tvLog)
+        tvRule = findViewById(R.id.tvRule)
 
-        fivTop.onTransitionListener = OnTransitionTextListener()
-            .setColor(Color.BLACK, Color.GRAY)
-            .setSize(20f, 18f)
-        IndicatorViewPager(fivTop, vpContent)
-            .adapter =
-            object : IndicatorViewPager.IndicatorFragmentPagerAdapter(supportFragmentManager) {
-                override fun getCount() = 2
+        vpContent.adapter = object : FragmentPagerAdapter(
+            supportFragmentManager,
+            BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT
+        ) {
+            override fun getCount() = 2
 
-                override fun getViewForTab(
-                    position: Int,
-                    convertView: View?,
-                    container: ViewGroup?
-                ): View {
-                    val textView =
-                        convertView?.let { it as TextView }
-                            ?: TextView(this@MainActivity)
-
-                    textView.apply {
-                        layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
-                        )
-                        gravity = Gravity.CENTER
-                        setText(if (position == 0) R.string.log else R.string.rule)
-                    }
-
-                    return textView
-                }
-
-                override fun getFragmentForPage(position: Int) =
-                    if (position == 0) logFragment else ruleFragment
+            override fun getItem(position: Int) = if (position == 0) logFragment else ruleFragment
+        }
+        vpContent.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+            override fun onPageScrolled(
+                position: Int,
+                positionOffset: Float,
+                positionOffsetPixels: Int
+            ) {
             }
+
+            override fun onPageSelected(position: Int) {
+                selectTab(position)
+            }
+
+            override fun onPageScrollStateChanged(state: Int) {
+            }
+        })
+        selectTab(0)
+        tvLog.setOnClickListener { selectTab(0) }
+        tvRule.setOnClickListener { selectTab(1) }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
             !(getSystemService(Context.POWER_SERVICE) as PowerManager).isIgnoringBatteryOptimizations(
@@ -78,6 +73,18 @@ class MainActivity : AppCompatActivity() {
                 }
                 .create().show()
         }
+    }
+
+    private fun selectTab(position: Int) {
+        tvLog.apply {
+            setTextColor(if (position == 0) Color.BLACK else Color.GRAY)
+            textSize = if (position == 0) 20f else 18f
+        }
+        tvRule.apply {
+            setTextColor(if (position == 1) Color.BLACK else Color.GRAY)
+            textSize = if (position == 1) 20f else 18f
+        }
+        vpContent.currentItem = position
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
